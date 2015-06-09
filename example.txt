@@ -1,0 +1,8 @@
+
+EXAMPLE
+$object = new PHP7z();
+$signzip->setDebug(true);
+$signzip->setSource('C:\Users\Owner\Documents\file.txt');
+$signzip->setDest('C:\Users\Owner\Documents\file.7z');
+$signzip->setPass('password');
+$signzip->compress();
