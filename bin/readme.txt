@@ -1,4 +1,4 @@
-7zPHP version beta
+PHP7z version beta
 -------------------------------
 
 Copyright (C) 2015 Benevides and Rodrigues.

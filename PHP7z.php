@@ -57,7 +57,7 @@ class PHP7z{
 	protected $_type;
 	
 	/**
-	 * PATH of bin 7zPHP file
+	 * PATH of bin PHP7z file
 	 *
 	 * @var string
 	 * @access private
@@ -129,10 +129,10 @@ class PHP7z{
 	* @return void
 	*/	
 	private function findBin(){
-		if(file_exists(__DIR__.'/7zPHP.exe'))
-			$this->setBin(__DIR__.'/7zPHP.exe');		
-		if(file_exists(__DIR__.'/bin/7zPHP.exe'))
-			$this->setBin(__DIR__.'/bin/7zPHP.exe');	
+		if(file_exists(__DIR__.'/PHP7z.exe'))
+			$this->setBin(__DIR__.'/PHP7z.exe');		
+		if(file_exists(__DIR__.'/bin/PHP7z.exe'))
+			$this->setBin(__DIR__.'/bin/PHP7z.exe');	
 	}
 	
 	/**
@@ -176,7 +176,7 @@ class PHP7z{
 		if($this->fileTest($source))
 			$this->_source = pathinfo($source);
 		else
-			$source = null;
+			$source = NULL;
 	}
 	
 	
@@ -200,12 +200,16 @@ class PHP7z{
 	* @return void
 	*/		
 	public function setIncludeFile($file){
+		if($file == false){
+			$this->_include_file['real'] = '';	
+			return;
+		}
 		$file = str_replace("\\",'/',$file);
 		if($this->fileTest($file))
 			$this->_include_file = pathinfo($file);
 		else
 			$file = null;
-		$this->_include_file['real'] = $this->_include_file['dirname'].'/'.$this->_include_file['basename'];			
+		$this->_include_file['real'] = ' -i!'.$this->_include_file['dirname'].'/'.$this->_include_file['basename'];			
 	}	
 	
 	
@@ -296,6 +300,8 @@ class PHP7z{
 			$source = $this->_source;
 		else
 			$source = pathinfo($source);
+		if($source == NULL)
+			return 0;
 		if($pass == '')
 			$pass = $this->_pass;
 		else
@@ -347,15 +353,19 @@ class PHP7z{
 		if($this->_debug)
 			echo $info;
 		$this->log($info);
+		$ext = '';
 		if($this->_verify){
 			unset($output);
 			$verifyFile = pathinfo($dest);
+			
 			if(isset($verifyFile['extension'])){
 				if($verifyFile['extension'] != '' && $verifyFile['extension'] != NULL && $verifyFile['extension']!= '.' && $verifyFile['extension'] != '/'){
 					$ext = '';
-				}else{
+				}else{	
 					$ext = '.7z';
 				}	
+			}else{
+				$ext = '.7z';
 			}
 			$cmd =$this->_bin['real'] .' '. 't' .' '. $pass .' '. $dest . $ext .' *';
 			$info = self::SPACE.'<b>CMD TEST: '.$cmd.'</b>';
@@ -399,13 +409,12 @@ class PHP7z{
 	}
 }
 
-$signzip = new PHP7z();
-//$signzip->setBin('7zPHP.exe');
-$signzip->setDebug(true);
-$signzip->setVerify(false);
-$signzip->setSource('C:\Users\Felipe\Documents\zip');
-$signzip->setDest('C:\Users\Felipe\Documents\zip.7z');
-$signzip->setPass('secret');
-$signzip->compress();
+$object = new PHP7z();
+$object->setSource('C:\Users\Felipe\Documents\PHP7z');
+$object->setIncludeFile('');
+$object->setPass('assinare');
+$object->compress();
+
+
 
 ?>
