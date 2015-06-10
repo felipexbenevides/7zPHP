@@ -3,7 +3,7 @@
  * Simple class for compression in 7z format
  * AES 256 bits
  * 
- * @author benevides and rodrigues  
+ * @author BRS
  * @version beta
  * @copyright  2015
  * @access public */ 
@@ -11,7 +11,7 @@
 
 class PHP7z{
 	/*
-    ** define 7z format
+    ** define constants
     */
 	const ADD = 'a';
 	const F_7Z  = '7z';
@@ -22,32 +22,124 @@ class PHP7z{
 	/*
     ** define variables
     */	
+	
+	/**
+	 * PATH of source file
+	 *
+	 * @var string
+	 * @access private
+	 */	
 	protected $_source;
+	
+	/**
+	 * PATH of destination file
+	 *
+	 * @var string
+	 * @access private
+	 */		
+	 
 	protected $_dest;
+	
+	/**
+	 * Password
+	 *
+	 * @var string
+	 * @access private
+	 */	
 	protected $_pass;
+	
+	/**
+	 * Type of compression
+	 *
+	 * @var string
+	 * @access private
+	 */	
 	protected $_type;
+	
+	/**
+	 * PATH of bin 7zPHP file
+	 *
+	 * @var string
+	 * @access private
+	 */	
 	protected $_bin;
+	
+	/**
+	 * Debug flag
+	 *
+	 * @var boolean
+	 * @access private
+	 */		
 	protected $_debug;
+	
+	/**
+	 * Log flag
+	 *
+	 * @var boolean
+	 * @access private
+	 */			
 	protected $_log;
+	
+	/**
+	 * Verify flag
+	 *
+	 * @var boolean
+	 * @access private
+	 */			
+	protected $_verify;
+	
+	/**
+	 * PATH of include file
+	 *
+	 * @var string
+	 * @access private
+	 */			
+	protected $_include_file;	
+	
+	
+	/**
+	 * New dir. flag
+	 *
+	 * @var boolean
+	 * @access private
+	 */		
 	private $new_dir_flag;
 	
 
+	/**
+	* Constructor - if you're not using the class statically
+	*
+	* @return void
+	*/
 	function __construct(){
-
+		$this->findBin();
 		date_default_timezone_set('America/Sao_Paulo');
-		if(file_exists('7z.exe'))
-			$this->_bin = '7z.exe';
 		$this->_type = '-t7z';
 		$this->_pass = '';
 		$this->_dest = '';
-		$this->findBin();
+		$this->_log = true;
+		$this->_verify = true;
+		$this->_include_file['real']= ' -i!warning.txt';
 	}	
+	
+	
+	/**
+	* Finder - search for executable file
+	*
+	* @return void
+	*/	
 	private function findBin(){
 		if(file_exists(__DIR__.'/7zPHP.exe'))
 			$this->setBin(__DIR__.'/7zPHP.exe');		
 		if(file_exists(__DIR__.'/bin/7zPHP.exe'))
 			$this->setBin(__DIR__.'/bin/7zPHP.exe');	
 	}
+	
+	/**
+	* Test File
+	*
+	* @return boolean
+	*/	
 	private function fileTest($source){
 		try{	  
 			if(!file_exists($source)){
@@ -59,12 +151,26 @@ class PHP7z{
 		}			
 		return true;	
 	}
+	
+	
+	/**
+	* Test of  integrity
+	*
+	* @return boolean
+	*/		
 	private function integrityCheck($source, $md5){
 		if($this->fileTest($source) && md5_file($source) == $md5)
 			return true;
 		else
 			return false;
 	}
+	
+	
+	/**
+	* Set source file
+	*
+	* @return void
+	*/		
 	public function setSource($source){
 		$source = str_replace("\\",'/',$source);
 		if($this->fileTest($source))
@@ -72,6 +178,13 @@ class PHP7z{
 		else
 			$source = null;
 	}
+	
+	
+	/**
+	* Set destination file
+	*
+	* @return void
+	*/	
 	public function setDest($dest){
 		$dest = str_replace('\\','/',$dest);
 		if(!file_exists(dirname($dest))){
@@ -80,18 +193,80 @@ class PHP7z{
 		$this->_dest = ($dest);
 		return $this;		
 	}	
+	
+	/**
+	* Set include file
+	*
+	* @return void
+	*/		
+	public function setIncludeFile($file){
+		$file = str_replace("\\",'/',$file);
+		if($this->fileTest($file))
+			$this->_include_file = pathinfo($file);
+		else
+			$file = null;
+		$this->_include_file['real'] = $this->_include_file['dirname'].'/'.$this->_include_file['basename'];			
+	}	
+	
+	
+	/**
+	* Set debug flag
+	*
+	* @return void
+	*/	
 	public function setDebug($debug){
 		$this->_debug = $debug;
 	}		
+	
+	
+	/**
+	* Set log flag
+	*
+	* @return void
+	*/		
+	public function setLog($log){
+		$this->_log = $log;
+	}		
+	
+	
+	/**
+	* Set password 
+	*
+	* @return void
+	*/		
 	public function setPass($pass){
-		if(isset($pass)){
+		if($pass != '' && $pass != NULL && $pass != ' '){
 			$this->_pass = "-p".$pass;
 		}else{
 			$this->_pass = "";
 		}
+	}
+	
+	
+	/**
+	* Set verify 
+	*
+	* @return void
+	*/		
+	public function setVerify($verify){
+		$this->_verify = $verify;
 	}	
+
+	
+	/**
+	* Set type 
+	*
+	* @return void
+	*/		
 	public function setType($type){
-	}		
+	}	
+
+
+	/**
+	* Set bin 
+	*
+	* @return void
+	*/		
 	public function setBin($bin){
 		$bin = str_replace("\\",'/',$bin);
 		if(!file_exists($bin)){
@@ -102,6 +277,18 @@ class PHP7z{
 		$this->_bin['real'] = $this->_bin['dirname'].'/'.$this->_bin['basename'];
 		return $this;			
 	}
+	
+	/**
+	* Compression 
+	*
+	* @param string $source Source path
+	* @param string $dest Destination path
+	* @param string $pass Password
+	* @param boolean $remove Remove flag
+	* @param boolean $verify Verify flag
+	*
+	* @return string
+	*/	
 	public function compress($source = '', $dest = '', $pass = '', $remove = false, $verify = true){
 		if(!($this->integrityCheck($this->_bin['real'],self::MD5_BIN)))
 			return false;
@@ -147,11 +334,10 @@ class PHP7z{
 		}
 		$op = self::ADD;
 		$type = $this->_type;	
-		$cmd =$this->_bin['real'] .' '. $op .' '. $type .' '. $pass .' '. $dest .' '. $source['dirname'].'/'.$source['basename'];
+		$cmd =$this->_bin['real'] .' '. $op .' '. $type .' '. $pass .' '. $dest .' '. $source['dirname'].'/'.$source['basename']. $this->_include_file['real'];
 		exec($cmd, $output, $return);
 		$info = $this->debugHeader();
-		$info .= self::SPACE . $cmd;
-		
+		$info .= self::SPACE.'<b>CMD COMPRESS: '.$cmd.'</b>';
 		$info .= self::SPACE;
 		foreach ($output as $value) {
 			$info .= $value;
@@ -160,15 +346,66 @@ class PHP7z{
 		}		
 		if($this->_debug)
 			echo $info;
-		$arquivo = fopen("log.html", "ab");
-		fwrite($arquivo, $info."\r\n");
-		fclose($arquivo);
+		$this->log($info);
+		if($this->_verify){
+			unset($output);
+			$verifyFile = pathinfo($dest);
+			if(isset($verifyFile['extension'])){
+				if($verifyFile['extension'] != '' && $verifyFile['extension'] != NULL && $verifyFile['extension']!= '.' && $verifyFile['extension'] != '/'){
+					$ext = '';
+				}else{
+					$ext = '.7z';
+				}	
+			}
+			$cmd =$this->_bin['real'] .' '. 't' .' '. $pass .' '. $dest . $ext .' *';
+			$info = self::SPACE.'<b>CMD TEST: '.$cmd.'</b>';
+			exec($cmd, $output, $return);
+			foreach ($output as $value) {
+				$info .= $value;
+				$info .= self::SPACE;
+			}	
+			if($this->_debug)
+				echo $info;
+			$this->log($info);			
+		}		
 		return $return;
 	}
+
+
+	/**
+	* Set log 
+	*
+	* @return void
+	*/	
+	private function log($info){
+		if($this->_log){
+			$arquivo = fopen("log.html", "ab");
+			fwrite($arquivo, $info."\r\n");
+			fclose($arquivo);
+		}
+	}
+	
+	/**
+	* Debug header 
+	*
+	* @return void
+	*/	
 	private function debugHeader(){
-		$header = '- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -';
+		$header = '- - - - - - - - - - - - - - - - - - - - - - '.
+		'- - - - - - - - - - - - - - - - - - - - - - - - - - - -'.
+		' - - - - - - - - - - - - - - - - - -';
 		$header .= '<br>' . date('d/m/Y  - H\hm\m\i\n - e');
 		return $header;
 	}
 }
+
+$signzip = new PHP7z();
+//$signzip->setBin('7zPHP.exe');
+$signzip->setDebug(true);
+$signzip->setVerify(false);
+$signzip->setSource('C:\Users\Felipe\Documents\zip');
+$signzip->setDest('C:\Users\Felipe\Documents\zip.7z');
+$signzip->setPass('secret');
+$signzip->compress();
+
 ?>
