@@ -1,0 +1,8 @@
+
+EXAMPLE
+$object = new PHP7z();
+$object ->setDebug(true);
+$object ->setSource('C:\Users\Owner\Documents\file.txt');
+$object ->setDest('C:\Users\Owner\Documents\file.7z');
+$object ->setPass('password');
+$object ->compress();
